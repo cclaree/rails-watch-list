@@ -1,20 +1,104 @@
-<h1><%= @list.name %></h1>
+<%# app/views/lists/show.html.erb %>
 
-<%= link_to "Add a movie", new_list_bookmark_path(@list), class: "btn btn-primary mb-3" %>
-<%= link_to "Back", lists_path, class: "btn btn-secondary mb-3" %>
+<div class="container py-4">
 
-<ul class="list-group">
-  <% @list.bookmarks.each do |bookmark| %>
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <div>
-        <strong><%= bookmark.movie.title %></strong>
-        <div class="text-muted"><%= bookmark.comment %></div>
+  <%# Header row: title + actions %>
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h1 class="mb-1"><%= @list.name %></h1>
+      <div class="text-muted">
+        <%= pluralize(@list.bookmarks.size, "movie") %> saved
       </div>
+    </div>
 
-      <%= link_to "Delete",
-                  bookmark_path(bookmark),
-                  data: { turbo_method: :delete, turbo_confirm: "Sure?" },
-                  class: "btn btn-sm btn-danger" %>
-    </li>
+    <div class="d-flex gap-2">
+      <%= link_to "Add a movie", new_list_bookmark_path(@list), class: "btn btn-primary" %>
+      <%= link_to "Back", lists_path, class: "btn btn-outline-secondary" %>
+      <%= link_to "Delete list",
+            list_path(@list),
+            data: { turbo_method: :delete, turbo_confirm: "Delete this list?" },
+            class: "btn btn-outline-danger" %>
+    </div>
+  </div>
+
+  <%# Optional: list photo (if you later add Active Storage for List photos) %>
+  <% if @list.respond_to?(:photo) && @list.photo.attached? %>
+    <div class="mb-4">
+      <%= image_tag @list.photo, class: "img-fluid rounded shadow-sm", alt: @list.name %>
+    </div>
   <% end %>
-</ul>
+
+  <h2 class="mb-3">Movies</h2>
+
+  <% if @list.bookmarks.empty? %>
+    <div class="alert alert-info">
+      No movies yet. Click <strong>Add a movie</strong> to save one into this list.
+    </div>
+  <% else %>
+    <div class="row">
+      <% @list.bookmarks.each do |bookmark| %>
+        <% movie = bookmark.movie %>
+
+        <div class="col-12 mb-3">
+          <div class="card shadow-sm">
+            <div class="row g-0">
+
+              <%# Poster %>
+              <div class="col-12 col-md-3">
+                <% if movie.poster_url.present? %>
+                  <%= image_tag movie.poster_url,
+                                class: "img-fluid rounded-start w-100",
+                                alt: movie.title,
+                                style: "aspect-ratio: 2 / 3; object-fit: cover;" %>
+                <% else %>
+                  <div class="bg-light d-flex align-items-center justify-content-center h-100 p-5 rounded-start">
+                    <span class="text-muted">No poster</span>
+                  </div>
+                <% end %>
+              </div>
+
+              <%# Content %>
+              <div class="col-12 col-md-9">
+                <div class="card-body">
+
+                  <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                      <h5 class="card-title mb-1">
+                        <%= movie.title %>
+                        <% if movie.rating.present? %>
+                          <span class="text-muted fw-normal">• <%= movie.rating %></span>
+                        <% end %>
+                      </h5>
+                    </div>
+
+                    <%= link_to "Delete",
+                                bookmark_path(bookmark),
+                                data: { turbo_method: :delete, turbo_confirm: "Sure?" },
+                                class: "btn btn-sm btn-outline-danger" %>
+                  </div>
+
+                  <% if movie.overview.present? %>
+                    <p class="card-text text-muted mt-2 mb-3">
+                      <%= movie.overview %>
+                    </p>
+                  <% end %>
+
+                  <%# Bookmark comment (the user's comment) %>
+                  <% if bookmark.comment.present? %>
+                    <div class="p-2 bg-light rounded">
+                      <strong class="me-2">Comment:</strong>
+                      <%= bookmark.comment %>
+                    </div>
+                  <% end %>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+</div>

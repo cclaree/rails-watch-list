@@ -1,6 +1,8 @@
 class ListsController < ApplicationController
   def index
     @lists = List.all
+    @top_movies = Movie.order(rating: :desc).limit(20)
+    @featured_movie = @top_movies.first
   end
 
   def show
@@ -20,9 +22,15 @@ class ListsController < ApplicationController
     end
   end
 
+  def destroy
+    @list = List.find(params[:id])
+    @list.destroy
+    redirect_to lists_path, notice: "List deleted."
+  end
+
   private
 
   def list_params
-    params.require(:list).permit(:name)
+    params.require(:list).permit(:name, :photo)
   end
 end

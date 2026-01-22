@@ -1,27 +1,101 @@
+<%# app/views/lists/index.html.erb %>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="mb-0">My Lists</h1>
-  <%= link_to "Create a new list", new_list_path, class: "btn btn-primary" %>
+  <div>
+    <h1 class="mb-0">Watch List</h1>
+    <p class="text-muted mb-0">Pick a movie, save it into a list, repeat 😌</p>
+  </div>
 </div>
 
-<% if @lists.empty? %>
-  <div class="alert alert-info">
-    No lists yet. Create your first one!
-  </div>
-<% else %>
-  <div class="row">
-    <% @lists.each do |list| %>
-      <div class="col-12 col-md-6 col-lg-4 mb-3">
-        <div class="card shadow-sm h-100">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title"><%= list.name %></h5>
-            <p class="card-text text-muted mb-4">A curated selection of movies.</p>
+<%# =========================
+    TOP RATED MOVIES SECTION
+    ========================= %>
 
-            <div class="mt-auto">
-              <%= link_to "Open list", list_path(list), class: "btn btn-outline-primary w-100" %>
+<% if defined?(@top_movies) && @top_movies.present? %>
+  <% featured = @top_movies.first %>
+
+  <% if featured.present? %>
+    <div class="card mb-4 shadow-sm">
+      <div class="row g-0">
+        <div class="col-12 col-md-3">
+          <%= image_tag featured.poster_url,
+                        class: "img-fluid rounded-start w-100",
+                        alt: featured.title,
+                        style: "object-fit: cover; height: 100%;" %>
+        </div>
+        <div class="col-12 col-md-9">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <h3 class="card-title mb-2"><%= featured.title %></h3>
+              <span class="badge text-bg-dark ms-2"><%= featured.rating %> ⭐</span>
             </div>
+            <p class="card-text text-muted mb-0"><%= featured.overview %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <h2 class="mb-3">Top Rated Movies</h2>
+
+  <div class="row">
+    <% @top_movies.each do |movie| %>
+      <div class="col-6 col-md-4 col-lg-3 mb-4">
+        <div class="card h-100 shadow-sm">
+          <%= image_tag movie.poster_url,
+                        class: "card-img-top",
+                        alt: movie.title,
+                        style: "aspect-ratio: 2 / 3; object-fit: cover;" %>
+
+          <div class="card-body">
+            <div class="fw-bold"><%= movie.title %></div>
+            <div class="text-muted"><%= movie.rating %> ⭐</div>
           </div>
         </div>
       </div>
     <% end %>
   </div>
+
+  <hr class="my-4">
+<% else %>
+  <div class="alert alert-info mb-4">
+    No movies found yet. Run <code>rails db:seed</code> to load movies.
+  </div>
 <% end %>
+
+<%# =========================
+    MY LISTS SECTION
+    ========================= %>
+
+<h2 class="mb-3">My Lists</h2>
+
+<div class="row">
+  <% @lists.each do |list| %>
+    <div class="col-12 col-md-6 col-lg-4 mb-4">
+      <div class="card h-100 shadow-sm">
+
+        <% if list.photo.attached? %>
+          <%= image_tag list.photo,
+                class: "card-img-top",
+                style: "height: 180px; object-fit: cover;",
+                alt: list.name %>
+        <% end %>
+
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title"><%= list.name %></h5>
+
+          <p class="text-muted">
+            <%= pluralize(list.bookmarks.count, "movie") %>
+          </p>
+
+          <div class="mt-auto">
+            <%= link_to "Open list",
+                        list_path(list),
+                        class: "btn btn-outline-primary w-100" %>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  <% end %>
+</div>
